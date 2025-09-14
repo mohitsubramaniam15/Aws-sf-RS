@@ -117,7 +117,7 @@ The notebook covers:
 ## 📸 Tableau Dashboard  
 ![Dashboard](https://github.com/mohitsubramaniam15/mohitsubramaniam15/blob/main/bi_screenshots/Redfin.png)  
 
-📊 Tableau Visualization: [Florida Market Analysis](https://public.tableau.com/views/FlordiaMarketAnalysis/Dashboard1?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link)  
+📊 Tableau Visualization: [Florida Market Analysis](https://public.tableau.com/views/FL-Market/Dashboard1?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link)  
 
 **Features**:  
 - KPIs for inventory, sale price, and DOM.  
