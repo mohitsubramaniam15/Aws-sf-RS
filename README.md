@@ -12,10 +12,10 @@ An end-to-end **cloud + analytics pipeline** analyzing Florida’s housing marke
 |---------|------|  
 | **Project Overview** | [Go to Project Overview](#-project-overview) |  
 | **Problem Statement** | [Go to Problem Statement](#-problem-statement) |  
-| **Part 1 - Data Analysis** | [Go to Data Analysis](#-part-1-data-analysis--anomaly--trend-exploration) |  
+| **Part 1 - Data Analysis** | [Go to Data Analysis](#-part-1-data-analysis---anomaly--trend-exploration) |  
 | **Notebook Breakdown** | [Open Notebook](#-notebook-breakdown-colab) |  
 | **Tableau Dashboard** | [View Dashboard](#-tableau-dashboard) |  
-| **Part 2 - Data Engineering** | [Go to Data Engineering](#-part-2-data-engineering--aws-snowflake-pipeline) |  
+| **Part 2 - Data Engineering** | [Go to Data Engineering](#-part-2-data-engineering---aws-snowflake-pipeline) |  
 | **Recommendations** | [Go to Recommendations](#-recommendations) |  
 | **Outcome** | [Go to Outcome](#-outcome) |  
 
