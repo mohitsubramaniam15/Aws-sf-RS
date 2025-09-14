@@ -1,180 +1,231 @@
+# 🏡 AWS Snowflake Real Estate Anomaly & Trend Analysis (Tableau)
 
-# 🏡 Real Estate Data Pipeline — Airflow | Pandas | AWS S3
+An end-to-end **cloud + analytics pipeline** analyzing Florida’s housing market (2012-2025). It integrates **AWS S3, Snowpipe, Snowflake, and Airflow** for scalable data warehousing, applies **statistical anomaly detection** in Python & Google Sheets, and delivers **interactive Tableau dashboards** for anomaly and trend exploration.  
 
-A production-ready data pipeline using **Apache Airflow** for orchestration, **Pandas** for transformation, and **AWS S3** for data storage. This pipeline ingests raw real estate data from Redfin, transforms and cleanses it, and uploads structured CSV files to an S3 bucket.
+📌 LinkedIn Walkthrough: [LinkedIn Post](https://www.linkedin.com/feed/update/urn:li:activity:7372969898106363904/)  
 
----
+---  
 
-## 💡 Project Overview
+## 📌 Navigation  
 
-This pipeline:
-- Extracts raw city-level real estate data from Redfin’s public data hub
-- Cleans, selects, and enriches the dataset using Pandas
-- Uploads the final dataset to an Amazon S3 bucket
-- Designed to run in a production-friendly Airflow DAG on an EC2 instance
+| Section | Link |  
+|---------|------|  
+| **Project Overview** | [Go to Project Overview](#-project-overview) |  
+| **Problem Statement** | [Go to Problem Statement](#-problem-statement) |  
+| **Part 1 - Data Analysis** | [Go to Data Analysis](#-part-1-data-analysis--anomaly--trend-exploration) |  
+| **Notebook Breakdown** | [Open Notebook](#-notebook-breakdown-colab) |  
+| **Tableau Dashboard** | [View Dashboard](#-tableau-dashboard) |  
+| **Part 2 - Data Engineering** | [Go to Data Engineering](#-part-2-data-engineering--aws-snowflake-pipeline) |  
+| **Recommendations** | [Go to Recommendations](#-recommendations) |  
+| **Outcome** | [Go to Outcome](#-outcome) |  
 
----
+---  
 
-## 🤖 Why These Tools?
+## 💡 Project Overview  
 
-| Tool         | Why it’s used                                                                 |
-|--------------|--------------------------------------------------------------------------------|
-| **Airflow**  | Manages and schedules reliable, auditable workflows with dependency control   |
-| **Pandas**   | Efficient data processing and transformation in Python                        |
-| **AWS S3**   | Cloud-based object storage to archive raw and cleaned data                    |
-| **EC2**      | Cost-effective compute to run ETL pipelines on demand                         |
+This pipeline:  
+- Processes **9.12M rows** from AWS S3 to Snowpipe to Snowflake.  
+- Warehouses data for **real estate insights** at scale.  
+- Builds interactive Tableau dashboards on **73K+ rows and 62 columns**, visualizing **month-over-month (MoM) and year-over-year (YoY)** housing trends in prices, sales, and inventory for Florida (2012-2025).  
+- Applies anomaly detection (Z-Score, IQR, Correlation) to uncover:  
+  - Housing price spikes  
+  - Inventory dips  
+  - Regional disparities  
 
----
+---  
 
-## 📡 Architecture
+## 🎯 Problem Statement  
+
+The Florida housing market (2012-2025) shows **volatile inventory, surging prices, and shifting demand**. Stakeholders need to:  
+- Detect **anomalies** like unsustainable spikes or dips.  
+- Model **trends** in affordability, supply, and competition.  
+- Use these insights to support **investment, policy, and buyer decisions**.  
+
+---  
+
+## 🔹 Part 1: Data Analysis - Anomaly & Trend Exploration  
+
+### 📊 Dataset  
+- 9.12M rows ingested from AWS S3 to Snowflake.  
+- 73K+ rows curated for Tableau.  
+- 62 columns including:  
+  - `PERIOD_BEGIN`, `PERIOD_END`, `REGION`, `STATE`, `ZIPCODE`  
+  - `MEDIAN_SALE_PRICE`, `MEDIAN_LIST_PRICE`, `INVENTORY`, `HOMES_SOLD`  
+  - `DAYS_ON_MARKET`, `SOLD_ABOVE_LIST`  
+
+### 🧪 Statistical Techniques  
+
+- **Z-Score (Price anomalies)**
+  ```excel
+  =(F2 - Stats!B7)/Stats!B8
+  ```
+  **Explanation:** Measures how far the price in F2 deviates from the mean (Stats!B7) in terms of standard deviations (Stats!B8). High absolute values indicate potential anomalies.
+
+- **IQR (Inventory outliers)**
+  ```excel
+  =IF(OR(H2<Stats!B4,H2>Stats!B5),"Outlier","")
+  ```
+  **Explanation:** Flags inventory values in H2 that fall outside the interquartile range bounds (Stats!B4 = Q1-1.5*IQR, Stats!B5 = Q3+1.5*IQR) as “Outlier”.
+
+- **Correlation analysis**
+  ```excel
+  =CORREL(Sheet1!F2:F,Sheet1!H2:H)   # Price vs Inventory
+  =CORREL(Sheet1!H2:H,Sheet1!G2:G)   # Inventory vs List Price
+  ```
+  **Explanation:** Computes linear correlation between two variables.
+
+  **Breakdown:**
+  - `CORREL(array1, array2)` → returns a correlation coefficient between -1 and 1.
+  - `Sheet1!F2:F` → range of actual prices.
+  - `Sheet1!H2:H` → range of inventory counts.
+  - `Sheet1!G2:G` → range of list prices.
+
+  **Interpretation:**
+  - +1 → perfect positive correlation.
+  - 0 → no correlation.
+  - -1 → perfect negative correlation.
+
+  **Use in context:**
+  - Price vs Inventory → see if higher prices reduce stock levels.
+  - Inventory vs List Price → check if inventory is stocked more for higher list prices.
+
+
+### 🔎 Trend Findings  
+
+- **Inventory**: -8.04% MoM decline.  
+- **Median Sale Price**: +52.84% MoM increase.  
+- **Homes Sold Above List**: +11.92% MoM increase.  
+- **Days on Market (DOM)**: Declining steadily.  
+- **Price per SqFt**: Rising post-2019.  
+- **County-level**: Hillsborough and Pinellas are more volatile than Hernando and Pasco.  
+
+---  
+
+## 📝 Notebook Breakdown (Colab)  
+
+📂 Colab Notebook: [Open in Google Colab](https://colab.research.google.com/drive/18kiVhsU590WE-r9vlG_66oFGpS2-aoJ7?usp=sharing)  
+
+The notebook covers:  
+- Data ingestion and cleaning.  
+- Transformation into analysis-ready tables.  
+- Price trend modeling (MoM and YoY).  
+- Outlier detection using Z-Score and IQR.  
+- Correlation between price, list price, and inventory.  
+- County-level comparisons for volatility and growth.  
+
+---  
+
+## 📸 Tableau Dashboard  
+![Dashboard](https://github.com/mohitsubramaniam15/mohitsubramaniam15/blob/main/bi_screenshots/Redfin.png)  
+
+📊 Tableau Visualization: [Florida Market Analysis](https://public.tableau.com/views/FlordiaMarketAnalysis/Dashboard1?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link)  
+
+**Features**:  
+- KPIs for inventory, sale price, and DOM.  
+- Trends in price per sqft, homes sold above list, and inventory.  
+- County and zip code drilldowns.  
+- Clear anomaly highlights such as **2021-22 price surges** and **2023 inventory dip**.  
+
+---  
+
+## 🔮 Recommendations  
+
+- **Policy makers**: Monitor price surges and inventory dips to preempt affordability crises.  
+- **Investors**: Target volatile counties (Hillsborough, Pinellas) for short-term gains and stable ones (Pasco, Hernando) for long-term stability.  
+- **Buyers**: Enter the market when DOM trends down and inventory rebounds.  
+- **Analysts**: Use correlation insights to forecast price-inventory dynamics.
+
+---  
+
+## 🔹 Part 2: Data Engineering - AWS Snowflake Pipeline  
+
+### 🏗️ Architecture  
 
 ```mermaid
 graph TD;
-  RedfinData -->|Download TSV.gz| ExtractData
-  ExtractData -->|Clean & Transform| Pandas
-  Pandas -->|Upload to S3| S3BucketCleaned
-  ExtractData -->|Upload Raw| S3BucketRaw
-  Airflow -->|Orchestrates Tasks| ExtractData
-  Airflow -->|Schedules Pipeline| DAG
-```
+  S3Raw --> Snowpipe
+  Snowpipe --> SnowflakeStage
+  SnowflakeStage --> SnowflakeWarehouse
+  SnowflakeWarehouse --> Airflow
+  Airflow --> Transformations
+  Transformations --> Tableau
+  Transformations --> GoogleSheets
+```  
 
----
+### ⚙️ Workflow Steps  
 
-## 📂 Directory Structure
+#### 1. Raw Data Ingestion  
+- Raw **TSV/CSV** exports from Redfin loaded into **AWS S3** (`real-estate-raw/`).  
+- Partitioned by `region`, `year`, and `month` for scalability.  
 
-```
-redfin-real-estate-pipeline/
-│
-├── dags/
-│   └── redflin_analytics.py        # Airflow DAG for extract-transform-load
-├── EC2_Setup.sh                    # Shell script to set up EC2 for Airflow
-├── snowflake_realestate.sql       # (Optional) Script for loading into Snowflake
-└── README.md
-```
+#### 2. Snowpipe Continuous Loading  
+- Snowpipe configured with **S3 event notifications** → triggers ingestion automatically.  
+- Data lands in **Snowflake staging tables** with schema-on-write.  
+- Handles millions of rows per batch with near real-time latency.  
 
----
+Example:  
+```sql
+CREATE PIPE real_estate_pipe 
+  AS COPY INTO real_estate_stage
+  FROM @s3_real_estate_stage
+  FILE_FORMAT = (TYPE = CSV FIELD_OPTIONALLY_ENCLOSED_BY='"');
+```  
 
-## 🏷️ Transformed Columns
+#### 3. Schema & Warehouse Design  
+- **Star schema**:  
+  - `fact_sales` (housing transactions: prices, inventory, DOM).  
+  - `dim_region` (county, zip, state).  
+  - `dim_date` (day, month, year).  
+- Warehousing set to **Medium**, auto-suspend enabled for cost optimization.  
 
-| Column                        | Description                              |
-|------------------------------|------------------------------------------|
-| period_begin, period_end     | Data range for the month                 |
-| city, state                  | Location info                            |
-| median_sale_price            | Median home sale price                   |
-| inventory, homes_sold        | Housing supply and demand metrics        |
-| months_of_supply             | Supply estimation metric                 |
-| period_begin_in_years        | Extracted year from `period_begin`       |
-| period_begin_in_months       | Extracted month name from `period_begin`|
+#### 4. Transformation Layer  
+- Airflow DAG executes **SQL scripts** and **Python ETL tasks**:  
+  - Deduplication and normalization.  
+  - Enrich with **time-based features** (YoY, MoM).  
+  - Pre-compute anomaly markers (z-scores, IQR flags).  
 
----
+Example:  
+```sql
+CREATE OR REPLACE TABLE curated.real_estate_trends AS
+SELECT 
+  region,
+  DATE_TRUNC('month', period_begin) AS month,
+  AVG(median_sale_price) AS avg_sale_price,
+  AVG(inventory) AS avg_inventory,
+  (AVG(median_sale_price) - LAG(AVG(median_sale_price)) 
+     OVER (PARTITION BY region ORDER BY month)) / 
+     LAG(AVG(median_sale_price)) OVER (PARTITION BY region ORDER BY month) AS mom_growth
+FROM staging.real_estate
+GROUP BY region, month;
+```  
 
-## ⚙️ Setup Instructions
+#### 5. Airflow Orchestration  
+- DAG scheduled **daily** to check for new files in S3 → trigger Snowpipe ingestion.  
+- Dependencies enforce order: ingestion → transformation → anomaly export → dashboard refresh.  
+- Error handling: retries with exponential backoff + Slack alerts.  
 
-### 🔧 Prerequisites
-
-- AWS Account with S3 access
-- Ubuntu EC2 instance
-- Python 3.10+
-- Airflow installed and configured
-
-### 1️⃣ Setup EC2 with Required Packages
-
-Run:
-
-```bash
-bash EC2_Setup.sh
-```
-
-This installs:
-- Apache Airflow
-- Pandas & Boto3
-- AWS CLI
-- Creates a Python virtual environment
-
-### 2️⃣ Configure AWS
-
-```bash
-aws configure
-```
-
-Provide IAM credentials that have S3 access to:
-- `store-raw-data-yml` (Raw data bucket)
-- `redfin-transform-zone-yml` (Cleaned data bucket)
-
----
-
-## 🚀 Run the Pipeline
-
-Trigger your DAG in Airflow:
-
-1. Start Airflow:
-```bash
-airflow standalone
-```
-
-2. Access Airflow UI at [http://localhost:8080](http://localhost:8080)
-
-3. Trigger the DAG: `redfin_analytics_dag`
-
----
-
-## 🌀 Airflow DAG Logic
-
-### `redflin_analytics.py`
-
+DAG Flow:  
 ```python
-extract_redfin_data = PythonOperator(
-    task_id='tsk_extract_redfin_data',
-    python_callable=extract_data,
-    op_kwargs={'url': url_by_city}
-)
+extract_data >> load_snowflake >> transform_trends >> export_anomalies >> refresh_tableau
+```  
 
-transform_redfin_data = PythonOperator(
-    task_id='tsk_transform_redfin_data',
-    python_callable=transform_data
-)
-
-load_to_s3 = BashOperator(
-    task_id='tsk_load_to_s3',
-    bash_command='aws s3 mv {{ ti.xcom_pull("tsk_extract_redfin_data")[0]}} s3://store-raw-data-yml'
-)
-
-extract_redfin_data >> transform_redfin_data >> load_to_s3
-```
+#### 6. Analytics Layer  
+- **Curated Layer** feeds Tableau dashboards.  
+- Anomaly-flagged extracts also exported to **Google Sheets** for formula-based validation.  
 
 ---
 
-## ✅ Sample Output
+### 🔑 Highlights  
+- Scalable ingestion: 9.12M rows handled via Snowpipe.  
+- Optimized storage: partitioned + parquet compression lowers costs.  
+- Production-ready orchestration: Airflow ensures reliability and automation.  
+- Multi-platform analytics: Snowflake powers both Tableau and Sheets.  
+  
+---  
 
-```text
-| city           | state       | median_sale_price | homes_sold | period_begin_in_months |
-|----------------|-------------|-------------------|------------|--------------------------|
-| Everett        | Washington  | 330000.0          | 13         | May                      |
-| Daytona Beach  | Florida     | 99000.0           | 111        | Dec                      |
-```
+## ✅ Outcome  
 
----
-
-## 🧪 Transformation Logic
-
-```python
-df['period_begin'] = pd.to_datetime(df['period_begin'])
-df["period_begin_in_years"] = df['period_begin'].dt.year
-df["period_begin_in_months"] = df['period_begin'].dt.month
-month_dict = {1: "Jan", 2: "Feb", 3: "Mar", ..., 12: "Dec"}
-df["period_begin_in_months"] = df["period_begin_in_months"].map(month_dict)
-```
-
----
-
-## 🔐 Security Best Practices
-
-- Never hardcode credentials — use AWS profiles or IAM roles
-- Use `.env` or secrets managers in production
-- Rotate S3 access keys regularly
-
----
-
-## 📌 License
-
-MIT License — free to use, modify, and distribute.
+- Built an **AWS to Snowflake to Tableau pipeline** on real estate data.  
+- Processed 9.12M rows and visualized trends from 2012-2025.  
+- Applied Z-Score, IQR, and correlation analysis to detect anomalies.  
+- Produced Tableau dashboards for real-time anomaly and trend exploration.  
